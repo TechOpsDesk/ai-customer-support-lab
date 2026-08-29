@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -24,7 +24,7 @@ RESPONSES: dict[str, dict[str, object]] = {
         "text": "The standard 30-day return window has passed. This request needs human review because I cannot decide an exception.",
         "action": "escalate_to_human",
         "handoff": True,
-        "knowlede_ids": ["KB-0003"],
+        "knowledge_ids": ["KB-0003"],
     },
     "CASE-0004": {
         "text": "The sealed-condition return no longer applies because the item was opened. I will refer any authenticity or material-condition dispute to a specialist.",
@@ -36,7 +36,7 @@ RESPONSES: dict[str, dict[str, object]] = {
         "text": "Covered hardware faults are within the 12-month warranty. PixelVault decides whether the remedy is repair or replacement.",
         "action": "follow_policy",
         "handoff": False,
-        "knowlede_ids": ["KB-0005"],
+        "knowledge_ids": ["KB-0005"],
     },
     "CASE-0006": {
         "text": "Liquid damage is excluded from the standard refurbished warranty. I can refer this for human review to discuss further options.",
@@ -66,7 +66,7 @@ RESPONSES: dict[str, dict[str, object]] = {
         "text": "I understand the complaint. I cannot offer compensation. I will refer this request to an authorised human.",
         "action": "escalate_to_human",
         "handoff": True,
-        "knowlede_ids": ["KB-0010"],
+        "knowledge_ids": ["KB-0010"],
     },
     "CASE-0011": {
         "text": "I will refer your request to the privacy team and an authorised human process. I cannot confirm completion or give a completion timeline.",
@@ -91,7 +91,7 @@ def respond(question: str) -> dict[str, object]:
             "text": "I do not have a reference response for this question.",
             "action": "escalate_to_human",
             "handoff": True,
-            "knowlede_ids": [],
+            "knowledge_ids": [],
         }
 
     return RESPONSES[case_id].copy()
@@ -105,3 +105,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
