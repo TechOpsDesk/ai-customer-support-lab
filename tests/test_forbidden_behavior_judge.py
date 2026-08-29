@@ -23,10 +23,11 @@ class ForbiddenBehaviorJudgeTests(unittest.TestCase):
         self.assertIs(result, False)
 
     def test_unknown_rule_is_unjudged(self) -> None:
-        case = {"must_not_do": "declare_parcel_lost_early"}
+        case = {"must_not_do": "future_unknown_rule"}
         result = judge_forbidden_behavior(case, "Your parcel is still being tracked.")
         self.assertIsNone(result)
 
 
 if __name__ == "__main__":
     unittest.main()
+
