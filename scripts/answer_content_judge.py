@@ -1,4 +1,8 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
+
+def _normalize(text: str) -> str:
+    return text.lower().replace(chr(39), "").replace("’", "")
 
 
 def judge_answer_content(case: dict[str, object], response_text: str) -> bool | None:
@@ -7,13 +11,13 @@ def judge_answer_content(case: dict[str, object], response_text: str) -> bool | 
     if not isinstance(concepts, list) or not concepts:
         return None
 
-    text = response_text.lower()
+    text = _normalize(response_text)
 
     for concept_group in concepts:
         if not isinstance(concept_group, list) or not concept_group:
             return None
 
-        found = any(str(phrase).lower() in text for phrase in concept_group)
+        found = any(_normalize(str(phrase)) in text for phrase in concept_group)
         if not found:
             return False
 
