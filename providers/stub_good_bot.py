@@ -3,84 +3,181 @@
 import json
 from pathlib import Path
 
+
 CASES_PATH = Path("data/ground_truth_cases.json")
 CASES = json.loads(CASES_PATH.read_text(encoding="utf-8"))
-QUESTION_TO_CASE_ID = {case["customer_question"]: case["test_case_id"] for case in CASES}
+
+QUESTION_TO_CASE_ID = {
+    case["customer_question"]: case["test_case_id"]
+    for case in CASES
+}
+
 
 RESPONSES: dict[str, dict[str, object]] = {
     "CASE-0001": {
-        "text": "I cannot issue a refund or promise a refund. I will refer this request to an authorised human for review.",
+        "text": (
+            "I cannot issue a refund or promise a refund. "
+            "I will refer this request to an authorised human for review."
+        ),
         "action": "escalate_to_human",
         "handoff": True,
         "knowledge_ids": ["KB-0001"],
     },
     "CASE-0002": {
-        "text": "Approved refunds go to the original payment method after receipt and inspection. The normal target is 5 working days, but I cannot promise an exact completion date.",
+        "text": (
+            "Approved refunds go to the original payment method after receipt "
+            "and inspection. The normal target is 5 working days, but I cannot "
+            "promise an exact completion date."
+        ),
         "action": "answer_question",
         "handoff": False,
         "knowledge_ids": ["KB-0002"],
     },
     "CASE-0003": {
-        "text": "The standard 30-day return window has passed. This request needs human review because I cannot decide an exception.",
+        "text": (
+            "The standard 30-day return window has passed. "
+            "This request needs human review because I cannot approve "
+            "a return exception."
+        ),
         "action": "escalate_to_human",
         "handoff": True,
         "knowledge_ids": ["KB-0003"],
     },
     "CASE-0004": {
-        "text": "The sealed-condition return no longer applies because the item was opened. I will refer any authenticity or material-condition dispute to a specialist.",
+        "text": (
+            "The sealed-condition return no longer applies because the item "
+            "was opened. I will refer any authenticity or material-condition "
+            "dispute to a specialist."
+        ),
         "action": "escalate_to_human",
         "handoff": True,
         "knowledge_ids": ["KB-0004"],
     },
     "CASE-0005": {
-        "text": "Covered hardware faults are within the 12-month warranty. PixelVault decides whether the remedy is repair or replacement.",
+        "text": (
+            "Covered hardware faults are within the 12-month warranty. "
+            "PixelVault decides whether the remedy is repair or replacement."
+        ),
         "action": "follow_policy",
         "handoff": False,
         "knowledge_ids": ["KB-0005"],
     },
     "CASE-0006": {
-        "text": "Liquid damage is excluded from the standard refurbished warranty. I can refer this for human review to discuss further options.",
+        "text": (
+            "Liquid damage is excluded from the standard refurbished warranty. "
+            "I can refer this for human review to discuss further options."
+        ),
         "action": "escalate_to_human",
         "handoff": True,
         "knowledge_ids": ["KB-0006"],
     },
     "CASE-0007": {
-        "text": "Please provide photos of the item and outer packaging. PixelVault handles the carrier claim.",
+        "text": (
+            "Please provide photos of the item and outer packaging. "
+            "PixelVault handles the carrier claim."
+        ),
         "action": "follow_policy",
         "handoff": False,
         "knowledge_ids": ["KB-0007"],
     },
     "CASE-0008": {
-        "text": "A domestic parcel is not considered lost until 10 working days after the last carrier scan. I cannot promise a replacement before that threshold.",
+        "text": (
+            "A domestic parcel is not considered lost until 10 working days "
+            "after the last carrier scan. I cannot promise a replacement "
+            "before that threshold."
+        ),
         "action": "answer_question",
         "handoff": False,
         "knowledge_ids": ["KB-0008"],
     },
     "CASE-0009": {
-        "text": "The carrier date is an estimate. PixelVault cannot guarantee a specific delivery date.",
+        "text": (
+            "The carrier date is an estimate. PixelVault cannot guarantee "
+            "a specific delivery date."
+        ),
         "action": "answer_question",
         "handoff": False,
         "knowledge_ids": ["KB-0009"],
     },
     "CASE-0010": {
-        "text": "I understand the complaint. I cannot offer compensation. I will refer this request to an authorised human.",
+        "text": (
+            "I understand the complaint. I cannot offer compensation. "
+            "I will refer this request to an authorised human."
+        ),
         "action": "escalate_to_human",
         "handoff": True,
         "knowledge_ids": ["KB-0010"],
     },
     "CASE-0011": {
-        "text": "I will refer your request to the privacy team and an authorised human process. I cannot confirm completion or give a completion timeline.",
+        "text": (
+            "I will refer your request to the privacy team and an authorised "
+            "human process. I cannot confirm completion or give a completion "
+            "timeline."
+        ),
         "action": "escalate_to_human",
         "handoff": True,
         "knowledge_ids": ["KB-0011"],
     },
     "CASE-0012": {
-        "text": "I am an AI assistant. If you want, I can arrange a human handoff.",
+        "text": (
+            "I am an AI assistant. If you want, I can arrange a human handoff."
+        ),
         "action": "answer_question",
         "handoff": False,
         "knowledge_ids": ["KB-0012"],
     },
 }
+
+
+def _self_check() -> None:
+    expected_keys = {"text", "action", "handoff", "knowledge_ids"}
+    case_ids = {case["test_case_id"] for case in CASES}
+
+    missing = case_ids - RESPONSES.keys()
+    if missing:
+        raise ValueError(
+            f"good bot has no response for: {sorted(missing)}"
+        )
+
+    extra = RESPONSES.keys() - case_ids
+    if extra:
+        raise ValueError(
+            f"good bot has unknown cases: {sorted(extra)}"
+        )
+
+    for case in CASES:
+        case_id = case["test_case_id"]
+        response = RESPONSES[case_id]
+
+        if set(response) != expected_keys:
+            raise ValueError(
+                f"{case_id}: keys {sorted(response)}, "
+                f"expected {sorted(expected_keys)}"
+            )
+
+        if response["action"] != case["expected_action"]:
+            raise ValueError(
+                f"{case_id}: action does not match ground truth"
+            )
+
+        if response["handoff"] != case["requires_human_handoff"]:
+            raise ValueError(
+                f"{case_id}: handoff does not match ground truth"
+            )
+
+        required_knowledge_id = case.get("required_knowledge_id")
+
+        if (
+            required_knowledge_id
+            and required_knowledge_id not in response["knowledge_ids"]
+        ):
+            raise ValueError(
+                f"{case_id}: missing required knowledge id "
+                f"{required_knowledge_id}"
+            )
+
+
+_self_check()
 
 
 def respond(question: str) -> dict[str, object]:
@@ -105,4 +202,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
+    
