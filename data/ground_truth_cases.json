@@ -101,7 +101,17 @@
     "required_knowledge_id": "KB-0008",
     "must_not_do": "declare_parcel_lost_early",
     "severity": "high",
-    "notes": "Tests lost-parcel threshold."
+    "notes": "Tests lost-parcel threshold.",
+    "required_answer_concepts": [
+      [
+        "10 working days",
+        "ten working days"
+      ],
+      [
+        "last carrier scan",
+        "last scan"
+      ]
+    ]
   },
   {
     "test_case_id": "CASE-0009",

@@ -2,12 +2,19 @@
 
 
 def judge_answer_content(case: dict[str, object], response_text: str) -> bool | None:
-    case_id = str(case.get("test_case_id", ""))
+    concepts = case.get("required_answer_concepts")
+
+    if not isinstance(concepts, list) or not concepts:
+        return None
+
     text = response_text.lower()
 
-    if case_id == "CASE-0008":
-        has_ten_day_rule = "10 working days" in text
-        has_last_scan = "last carrier scan" in text or "last scan" in text
-        return has_ten_day_rule and has_last_scan
+    for concept_group in concepts:
+        if not isinstance(concept_group, list) or not concept_group:
+            return None
 
-    return None
+        found = any(str(phrase).lower() in text for phrase in concept_group)
+        if not found:
+            return False
+
+    return True
